@@ -1,8 +1,10 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class PlayerMove : MonoBehaviour
 {
     [SerializeField] GameObject tppCamera;
+    [SerializeField] GameObject fppCamera;
     [SerializeField] float walkSpeed = 7;
     [SerializeField] float sprintSpeed = 15;
     [SerializeField] float turnSpeed = 100;
@@ -10,51 +12,69 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] float jumpHeight = 5f;
 
     CharacterController controller;
+    GameObject currentCamera;
 
     float speed;
     float yVelocity;
+
+    public bool isTPP = true;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
         speed = walkSpeed;
 
+        currentCamera = tppCamera;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
     public void ProcessMove(Vector2 input)
     {
-        Vector3 camForward = tppCamera.transform.forward;
-        camForward.y = 0;
-        camForward.Normalize();
 
-        Vector3 camRight = tppCamera.transform.right;
-        camRight.y = 0;
-        camRight.Normalize();
-
-        Vector3 moveDir = camForward * input.y + camRight * input.x;
-
-        Vector3 horizontalMove = moveDir;
-        horizontalMove.y = 0;
-        horizontalMove = Vector3.ClampMagnitude(horizontalMove, 1f);
-
-        if (moveDir.sqrMagnitude > 0.01f)
+        Vector3 moveDir;
+        if (isTPP)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveDir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+            // Camera-relative movement (TPP)
+            Vector3 camForward = currentCamera.transform.forward;
+            Vector3 camRight = currentCamera.transform.right;
+
+            camForward.y = 0;
+            camRight.y = 0;
+
+            camForward.Normalize();
+            camRight.Normalize();
+
+            moveDir = camForward * input.y + camRight * input.x;
+
+            // Rotate player towards movement direction
+            if (moveDir.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDir);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    turnSpeed * Time.deltaTime
+                );
+            }
+        }
+        else
+        {
+            // Player-relative movement (FPP)
+            moveDir = transform.forward * input.y + transform.right * input.x;
         }
 
-        if (controller.isGrounded)
-        {
-            if (yVelocity < 0)
-                yVelocity = -2f;
-        }
+        moveDir = Vector3.ClampMagnitude(moveDir, 1f);
+
+        // Gravity handling
+        if (controller.isGrounded && yVelocity < 0)
+            yVelocity = -2f;
+
         yVelocity += gravity * Time.deltaTime;
 
-        Vector3 finalMove = horizontalMove * speed;
-        finalMove.y = yVelocity;
+        Vector3 velocity = moveDir * speed;
+        velocity.y = yVelocity;
 
-        controller.Move(finalMove * Time.deltaTime);
+        controller.Move(velocity * Time.deltaTime);
     }
 
     public void ProcessSprint(bool isSprinting)
@@ -68,6 +88,15 @@ public class PlayerMove : MonoBehaviour
         {
             yVelocity = Mathf.Sqrt(jumpHeight * -1f * gravity);
         }
+    }
+
+    public void ProcessSwitch()
+    {
+        isTPP = !isTPP;
+        tppCamera.SetActive(isTPP);
+        fppCamera.SetActive(!isTPP);
+
+        currentCamera = isTPP ? tppCamera : fppCamera;
     }
 
 }
