@@ -240,6 +240,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""9d528e7a-41e6-40a2-bbaf-edb4b3bbad62"",
+                    ""path"": ""<Pointer>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""db3ed1f7-f95d-449f-b65a-87c29930126c"",
                     ""path"": ""<Keyboard>/tab"",
                     ""interactions"": """",
