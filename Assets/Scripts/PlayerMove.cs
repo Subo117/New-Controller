@@ -25,8 +25,8 @@ public class PlayerMove : MonoBehaviour
         speed = walkSpeed;
 
         currentCamera = tppCamera;
-        //Cursor.lockState = CursorLockMode.Locked;
-        //Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
     public void ProcessMove(Vector2 input)
     {
